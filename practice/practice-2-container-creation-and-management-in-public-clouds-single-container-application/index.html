@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Калькулятор</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #f3f5f9;
+      color: #172035;
+      font: 16px/1.5 system-ui, sans-serif;
+    }
+    main {
+      width: 100%;
+      max-width: 560px;
+      padding: 32px;
+      background: white;
+      border: 1px solid #dde3ed;
+      border-radius: 20px;
+      box-shadow: 0 12px 40px #1720350a;
+    }
+    h1 { margin: 0 0 8px; font-size: 32px; letter-spacing: -0.8px; }
+    p { margin: 0 0 24px; color: #58657b; }
+    form { display: grid; gap: 20px; }
+    .numbers { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    label { display: grid; gap: 8px; font-weight: 600; }
+    input, select, button {
+      width: 100%;
+      min-width: 0;
+      padding: 12px 14px;
+      border: 1px solid #b6c2d4;
+      border-radius: 10px;
+      font: inherit;
+    }
+    input, select { background: white; color: inherit; }
+    :focus-visible { outline: 3px solid #83a9f4; outline-offset: 3px; }
+    button {
+      border-color: #2759bc;
+      background: #2759bc;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover { background: #204c9e; }
+    button:disabled { opacity: 0.65; cursor: wait; }
+    output {
+      display: block;
+      margin-top: 24px;
+      padding: 16px;
+      border-radius: 10px;
+      background: #eef3fc;
+      overflow-wrap: anywhere;
+    }
+    output[data-state="error"] { background: #fff0f0; color: #a51c30; }
+    footer { margin-top: 20px; font-size: 14px; }
+    a { color: #2759bc; }
+    @media (max-width: 420px) {
+      main { padding: 24px; }
+      .numbers { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Калькулятор</h1>
+    <p>Введите два числа и выберите действие.</p>
+    <form id="calculator">
+      <div class="numbers">
+        <label for="a">Первое число
+          <input id="a" name="a" type="number" step="any" value="6" required>
+        </label>
+        <label for="b">Второе число
+          <input id="b" name="b" type="number" step="any" value="2" required>
+        </label>
+      </div>
+      <label for="operation">Действие
+        <select id="operation" name="operation">
+          <option value="add">Сложить (+)</option>
+          <option value="subtract">Вычесть (−)</option>
+          <option value="multiply">Умножить (×)</option>
+          <option value="divide" selected>Разделить (÷)</option>
+        </select>
+      </label>
+      <button type="submit">Вычислить</button>
+    </form>
+    <output id="result" for="a b operation" aria-live="polite" aria-atomic="true">Здесь появится результат.</output>
+    <footer><a href="/docs">Документация API</a></footer>
+    <noscript><p>Для вычислений на этой странице включите JavaScript.</p></noscript>
+  </main>
+  <script>
+    const form = document.getElementById('calculator');
+    const output = document.getElementById('result');
+    const button = form.querySelector('button');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      button.disabled = true;
+      output.dataset.state = '';
+      output.textContent = 'Вычисляем…';
+      try {
+        const params = new URLSearchParams(new FormData(form));
+        const response = await fetch(`/api/calculate?${params}`);
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(typeof data.detail === 'string'
+            ? data.detail : 'Проверьте числа и выбранное действие.');
+        }
+        output.textContent = `Результат: ${data.result}`;
+      } catch (error) {
+        output.dataset.state = 'error';
+        output.textContent = error instanceof TypeError
+          ? 'Не удалось связаться с сервером. Попробуйте ещё раз.'
+          : error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
