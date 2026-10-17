@@ -1,0 +1,23 @@
+Проверка 17 октября 2026 года. Фактический вывод команд.
+
+$ docker version --format Client: {{.Client.Version}}; Server: {{.Server.Version}}
+Client: 29.3.1; Server: 29.3.1
+
+$ docker ps --filter name=^/susu-cloud-practice2$ --format table {{.Names}}	{{.Image}}	{{.Status}}	{{.Ports}}
+NAMES                  IMAGE                             STATUS          PORTS
+susu-cloud-practice2   susu-cloud-practice2:2026-10-17   Up 34 seconds   127.0.0.1:8000->8000/tcp
+
+$ docker inspect susu-cloud-practice2 --format State={{.State.Status}}; Platform={{.Platform}}; StartedAt={{.State.StartedAt}}
+State=running; Platform=linux; StartedAt=2026-10-17T12:53:42.051213292Z
+
+$ docker image inspect susu-cloud-practice2:2026-10-17 --format OS={{.Os}}; Architecture={{.Architecture}}; ID={{.Id}}
+OS=linux; Architecture=arm64; ID=sha256:8e91795a5e2693e953fb4f28ebad0ee05158c53630eada3c41fc59236e85d2da
+
+$ docker exec susu-cloud-practice2 id
+uid=10001(app) gid=10001(app) groups=10001(app)
+
+$ docker exec susu-cloud-practice2 python --version
+Python 3.12.15
+
+$ python3 CT-2026/practice/practice-2-container-creation-and-management-in-public-clouds-single-container-application/test_app.py http://127.0.0.1:8000
+HTTP-проверки пройдены: http://127.0.0.1:8000
