@@ -1,0 +1,28 @@
+name: ct-practice3
+services:
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - notes:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    restart: unless-stopped
+  web:
+    image: susu-cloud-practice3:2026-10-17
+    build: .
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "${WEB_BIND:-127.0.0.1}:${WEB_PORT:-8003}:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  notes:
+    external: true
+    name: ct-practice3-notes

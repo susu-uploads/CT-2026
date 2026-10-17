@@ -1,0 +1,8 @@
+Ручной запуск, 17 октября 2026 года
+$ docker ps --filter name=ct-practice3 --format table {{.Names}}	{{.Status}}	{{.Ports}}
+NAMES                STATUS          PORTS
+ct-practice3-web     Up 12 seconds   127.0.0.1:8003->8000/tcp
+ct-practice3-redis   Up 12 seconds   6379/tcp
+
+$ docker network inspect ct-practice3-manual --format {{json .Containers}}
+{"437603de28944b227ae8d676147e000425de80d1c12177d48f74243d34436b95":{"Name":"ct-practice3-web","EndpointID":"09ec2ea39d2ea1160a2ed09b6e71968caa4a4203386ad7cf8a7611df34fe5bf6","MacAddress":"12:03:28:e5:43:ec","IPv4Address":"172.18.0.3/16","IPv6Address":""},"a36cfe7701c12c3408dd9005817d0070649946f7f13477dcecb0d85fee3ee5b9":{"Name":"ct-practice3-redis","EndpointID":"6507a711c39a67621e642efcf2392618b14bbe6baaf79435075cc12505885771","MacAddress":"52:6f:76:d1:a8:e4","IPv4Address":"172.18.0.2/16","IPv6Address":""}}

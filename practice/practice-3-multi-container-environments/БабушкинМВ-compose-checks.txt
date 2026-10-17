@@ -1,0 +1,15 @@
+Compose, 17 октября 2026 года
+$ docker compose ps
+NAME                   IMAGE                             COMMAND                  SERVICE   CREATED          STATUS                                     PORTS
+ct-practice3-redis-1   redis:7.4-alpine                  "docker-entrypoint.s…"   redis     57 seconds ago   Up Less than a second (health: starting)   6379/tcp
+ct-practice3-web-1     susu-cloud-practice3:2026-10-17   "python -m uvicorn m…"   web       57 seconds ago   Up 54 seconds                              127.0.0.1:8003->8000/tcp
+
+$ docker network inspect ct-practice3_default --format {{json .Containers}}
+{"633d3255fda7ecb244c77aee5c33f76279ac722b7115918c45ef356751dee56c":{"Name":"ct-practice3-web-1","EndpointID":"842627671f409c8cf079abc046b1c03faf9554220f48007b55186ed28171ef11","MacAddress":"9a:c2:74:a3:f8:ef","IPv4Address":"172.18.0.3/16","IPv6Address":""},"fa20fe47886d6e370600802372dd70fe10a02aca93fa9499e80f3bb3ecc333f9":{"Name":"ct-practice3-redis-1","EndpointID":"0991b1b192eef8283e88e016353b94e8fd103d79c110b2fccc5fe8b2b1392395","MacAddress":"c6:ff:7e:02:3d:46","IPv4Address":"172.18.0.2/16","IPv6Address":""}}
+
+$ docker compose exec -T redis redis-cli config get appendonly
+appendonly
+yes
+
+$ docker compose exec -T web python -m pip check
+No broken requirements found.
