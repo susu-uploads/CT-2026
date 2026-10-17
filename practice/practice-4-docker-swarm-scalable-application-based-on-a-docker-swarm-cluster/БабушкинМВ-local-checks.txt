@@ -1,0 +1,26 @@
+Проверки 17 октября 2026 года. Фактический вывод команд.
+
+$ docker compose ps
+NAME                    IMAGE                             COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+ct-practice4-api-1      susu-cloud-practice4:2026-10-17   "python -m uvicorn m…"   api       25 seconds ago   Up 22 seconds             127.0.0.1:8005->8000/tcp
+ct-practice4-redis-1    redis:7.4-alpine                  "docker-entrypoint.s…"   redis     25 seconds ago   Up 25 seconds (healthy)   6379/tcp
+ct-practice4-worker-1   susu-cloud-practice4:2026-10-17   "python worker.py"       worker    25 seconds ago   Up 22 seconds             8000/tcp
+ct-practice4-worker-2   susu-cloud-practice4:2026-10-17   "python worker.py"       worker    25 seconds ago   Up 22 seconds             8000/tcp
+
+$ docker compose exec -T api python -m pip check
+No broken requirements found.
+
+$ docker compose exec -T api python --version
+Python 3.12.15
+
+$ docker compose exec -T api python -c from redis import Redis; from rq.job import Job; r=Redis.from_url('redis://redis:6379/0'); j=Job.fetch('aaddffe7c324471f8b99469edf28fa74',connection=r); print('job/input TTL:',r.ttl(j.key)); print('result TTL:',r.ttl('rq:results:'+j.id)); assert 0<r.ttl(j.key)<=3600
+job/input TTL: 3572
+result TTL: 3572
+
+$ docker compose logs --tail 3 worker
+worker-2  | 13:24:27 Worker 4c8a813dccc04f55bc06e712d773621c: subscribing to channel rq:pubsub:4c8a813dccc04f55bc06e712d773621c
+worker-2  | 13:24:27 *** Listening on csv...
+worker-2  | 13:24:27 Worker 4c8a813dccc04f55bc06e712d773621c: cleaning registries for queue: csv
+worker-1  | 13:24:27 Worker 785ff3f1779946a8bfc7e4a0f1dedeb7: subscribing to channel rq:pubsub:785ff3f1779946a8bfc7e4a0f1dedeb7
+worker-1  | 13:24:27 *** Listening on csv...
+worker-1  | 13:24:27 Worker 785ff3f1779946a8bfc7e4a0f1dedeb7: cleaning registries for queue: csv

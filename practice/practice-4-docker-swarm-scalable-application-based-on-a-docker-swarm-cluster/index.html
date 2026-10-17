@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,"><title>CSV TOP-N</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:32px 20px;background:#f3f5f9;color:#172035;font:16px/1.6 system-ui,sans-serif}main{max-width:900px;margin:32px auto;background:white;padding:32px;border:1px solid #dde3ed;border-radius:20px}h1{margin:0}p{color:#58657b}form{display:grid;gap:16px}label{display:grid;gap:6px;font-weight:600}input,button{font:inherit;padding:12px;border:1px solid #b6c2d4;border-radius:10px;max-width:100%;width:100%}button{background:#2759bc;color:white;cursor:pointer}button:disabled{opacity:.6}output{display:block;padding:16px 0;overflow-wrap:anywhere}output[data-error="true"]{color:#a51c30}.table{overflow:auto}table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:10px;border-bottom:1px solid #dde3ed;overflow-wrap:anywhere}a{color:#2759bc}:focus-visible{outline:3px solid #83a9f4;outline-offset:3px}
+</style>
+<main><h1>CSV TOP-N</h1><p>Загрузите таблицу и получите строки с наибольшими значениями выбранного числового столбца.</p>
+<form id="job-form">
+<label for="file">CSV-файл<input id="file" type="file" accept=".csv,text/csv" required></label>
+<label for="column">Имя числового столбца<input id="column" required maxlength="500" placeholder="Например, price"></label>
+<label for="n">Количество строк<input id="n" type="number" min="1" max="100" value="3" required></label>
+<button>Обработать CSV</button></form>
+<output id="status" aria-live="polite">До 5 МиБ и 50 000 строк. CSV в UTF-8, разделитель — запятая.</output>
+<div class="table" id="result"></div><a href="/docs">Документация API</a></main>
+<script>
+const form=document.getElementById('job-form'),status=document.getElementById('status'),button=form.querySelector('button');
+async function api(path,options){const response=await fetch(path,options),data=await response.json();if(!response.ok)throw Error(typeof data.detail==='string'?data.detail:'Проверьте файл, столбец и N.');return data;}
+function render(result){const table=document.createElement('table'),head=document.createElement('thead'),tr=document.createElement('tr');for(const name of result.columns){const th=document.createElement('th');th.textContent=name;tr.append(th);}head.append(tr);table.append(head);const body=document.createElement('tbody');for(const row of result.rows){const tr=document.createElement('tr');for(const name of result.columns){const td=document.createElement('td');td.textContent=row[name];tr.append(td);}body.append(tr);}table.append(body);document.getElementById('result').replaceChildren(table);}
+form.addEventListener('submit',async event=>{event.preventDefault();button.disabled=true;status.dataset.error='false';document.getElementById('result').replaceChildren();try{const file=document.getElementById('file').files[0];if(!file||file.size>5*1024*1024)throw Error('Выберите CSV размером до 5 МиБ.');const data=new FormData();data.append('file',file);data.append('column',document.getElementById('column').value);data.append('n',document.getElementById('n').value);const job=await api('/jobs',{method:'POST',body:data});for(;;){const result=await api('/jobs/'+job.job_id);status.textContent='Задание '+job.job_id+': '+({queued:'в очереди',started:'обрабатывается',finished:'готово',failed:'ошибка'}[result.status]);if(result.status==='failed')throw Error(result.error);if(result.status==='finished'){render(result.result);break;}await new Promise(resolve=>setTimeout(resolve,1000));}}catch(error){status.dataset.error='true';status.textContent=error instanceof TypeError?'Не удалось связаться с сервером.':error.message;}finally{button.disabled=false;}});
+</script></html>

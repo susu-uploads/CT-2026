@@ -1,0 +1,52 @@
+version: "3.8"
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - target: 80
+        published: 8084
+        protocol: tcp
+        mode: ingress
+    deploy:
+      replicas: 2
+      placement:
+        constraints: [node.role == worker]
+        max_replicas_per_node: 1
+  redis:
+    image: redis:7.4-alpine
+    command: [redis-server, --appendonly, "yes"]
+    volumes: [csv-data:/data]
+    networks: [csv]
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+  api:
+    image: ${REGISTRY_HOST}:5000/csv-topn:${IMAGE_TAG:-2026-10-17}
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - target: 8000
+        published: 8085
+        protocol: tcp
+        mode: ingress
+    networks: [csv]
+    deploy:
+      replicas: 2
+      placement:
+        constraints: [node.role == worker]
+  worker:
+    image: ${REGISTRY_HOST}:5000/csv-topn:${IMAGE_TAG:-2026-10-17}
+    command: [python, worker.py]
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    networks: [csv]
+    deploy:
+      replicas: 2
+      placement:
+        constraints: [node.role == worker]
+networks:
+  csv:
+    driver: overlay
+volumes:
+  csv-data:

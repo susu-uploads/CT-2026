@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!requirements.txt
+!main.py
+!index.html
+!tasks.py
+!worker.py
