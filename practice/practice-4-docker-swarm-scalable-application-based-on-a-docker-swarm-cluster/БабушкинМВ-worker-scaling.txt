@@ -1,0 +1,50 @@
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Worker c0d09b4b62fa465b85365a695ef1b807: csv: Job OK (4d40bddd0276414e853a37a9c34ccd7a)
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Worker c0d09b4b62fa465b85365a695ef1b807: job 4d40bddd0276414e853a37a9c34ccd7a result is kept for 3600 seconds
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Worker c0d09b4b62fa465b85365a695ef1b807: csv: CSV TOP-N 2a1f0864ffe44d96bbc7fb312afdb8b8 (2a1f0864ffe44d96bbc7fb312afdb8b8)
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Successfully completed CSV TOP-N 2a1f0864ffe44d96bbc7fb312afdb8b8 job in 0:00:00.013823s on worker c0d09b4b62fa465b85365a695ef1b807
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Worker c0d09b4b62fa465b85365a695ef1b807: csv: Job OK (2a1f0864ffe44d96bbc7fb312afdb8b8)
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Worker c0d09b4b62fa465b85365a695ef1b807: job 2a1f0864ffe44d96bbc7fb312afdb8b8 result is kept for 3600 seconds
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Worker c0d09b4b62fa465b85365a695ef1b807: csv: CSV TOP-N 8b85338c2b5b4b6580838bcf2273a795 (8b85338c2b5b4b6580838bcf2273a795)
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Successfully completed CSV TOP-N 8b85338c2b5b4b6580838bcf2273a795 job in 0:00:00.014317s on worker c0d09b4b62fa465b85365a695ef1b807
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Worker c0d09b4b62fa465b85365a695ef1b807: csv: Job OK (8b85338c2b5b4b6580838bcf2273a795)
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Worker c0d09b4b62fa465b85365a695ef1b807: job 8b85338c2b5b4b6580838bcf2273a795 result is kept for 3600 seconds
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Worker c0d09b4b62fa465b85365a695ef1b807: csv: CSV TOP-N cd0472c2c56748dda9d1375de6c77bd6 (cd0472c2c56748dda9d1375de6c77bd6)
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Successfully completed CSV TOP-N cd0472c2c56748dda9d1375de6c77bd6 job in 0:00:00.025580s on worker c0d09b4b62fa465b85365a695ef1b807
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Worker c0d09b4b62fa465b85365a695ef1b807: csv: Job OK (cd0472c2c56748dda9d1375de6c77bd6)
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Worker c0d09b4b62fa465b85365a695ef1b807: job cd0472c2c56748dda9d1375de6c77bd6 result is kept for 3600 seconds
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Worker c0d09b4b62fa465b85365a695ef1b807: csv: CSV TOP-N 11393736715549208e8bcbbbad95245a (11393736715549208e8bcbbbad95245a)
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Successfully completed CSV TOP-N 11393736715549208e8bcbbbad95245a job in 0:00:00.024636s on worker c0d09b4b62fa465b85365a695ef1b807
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Worker c0d09b4b62fa465b85365a695ef1b807: csv: Job OK (11393736715549208e8bcbbbad95245a)
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:26 Worker c0d09b4b62fa465b85365a695ef1b807: job 11393736715549208e8bcbbbad95245a result is kept for 3600 seconds
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:33 Worker c0d09b4b62fa465b85365a695ef1b807: could not connect to Redis instance: Connection closed by server. retrying in 1 seconds...
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:33 Worker c0d09b4b62fa465b85365a695ef1b807: could not connect to Redis instance: Error 111 connecting to redis:6379. Connection refused. retrying in 2 seconds...
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:34 Worker c0d09b4b62fa465b85365a695ef1b807: could not connect to Redis instance: Error -2 connecting to redis:6379. Name or service not known. retrying in 2 seconds...
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:35 Worker c0d09b4b62fa465b85365a695ef1b807: could not connect to Redis instance: Error -2 connecting to redis:6379. Name or service not known. retrying in 2 seconds...
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:36 Worker c0d09b4b62fa465b85365a695ef1b807: could not connect to Redis instance: Error -2 connecting to redis:6379. Name or service not known. retrying in 4 seconds...
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:37 Worker c0d09b4b62fa465b85365a695ef1b807: could not connect to Redis instance: Error -2 connecting to redis:6379. Name or service not known. retrying in 2 seconds...
+ct-2026-practice-4_worker.1.jy0tihhcpeg1@nl-vmnano-1    | 12:54:40 Worker c0d09b4b62fa465b85365a695ef1b807: cleaning registries for queue: csv
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Worker 51ca17f041dc40d28e1c6154f6c2f054: subscribing to channel rq:pubsub:51ca17f041dc40d28e1c6154f6c2f054
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 *** Listening on csv...
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Worker 51ca17f041dc40d28e1c6154f6c2f054: cleaning registries for queue: csv
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Worker 51ca17f041dc40d28e1c6154f6c2f054: csv: CSV TOP-N 9026965fe6ee44adbf5d06e9541da30a (9026965fe6ee44adbf5d06e9541da30a)
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Successfully completed CSV TOP-N 9026965fe6ee44adbf5d06e9541da30a job in 0:00:00.031614s on worker 51ca17f041dc40d28e1c6154f6c2f054
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Worker 51ca17f041dc40d28e1c6154f6c2f054: csv: Job OK (9026965fe6ee44adbf5d06e9541da30a)
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Worker 51ca17f041dc40d28e1c6154f6c2f054: job 9026965fe6ee44adbf5d06e9541da30a result is kept for 3600 seconds
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Worker 51ca17f041dc40d28e1c6154f6c2f054: csv: CSV TOP-N 4080bcc8f5034c4ebcf89f12ecf3973c (4080bcc8f5034c4ebcf89f12ecf3973c)
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Successfully completed CSV TOP-N 4080bcc8f5034c4ebcf89f12ecf3973c job in 0:00:00.024564s on worker 51ca17f041dc40d28e1c6154f6c2f054
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Worker 51ca17f041dc40d28e1c6154f6c2f054: csv: Job OK (4080bcc8f5034c4ebcf89f12ecf3973c)
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Worker 51ca17f041dc40d28e1c6154f6c2f054: job 4080bcc8f5034c4ebcf89f12ecf3973c result is kept for 3600 seconds
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Worker 51ca17f041dc40d28e1c6154f6c2f054: csv: CSV TOP-N decbf1c919124a5e9651a1c59e966d9d (decbf1c919124a5e9651a1c59e966d9d)
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Successfully completed CSV TOP-N decbf1c919124a5e9651a1c59e966d9d job in 0:00:00.019448s on worker 51ca17f041dc40d28e1c6154f6c2f054
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Worker 51ca17f041dc40d28e1c6154f6c2f054: csv: Job OK (decbf1c919124a5e9651a1c59e966d9d)
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Worker 51ca17f041dc40d28e1c6154f6c2f054: job decbf1c919124a5e9651a1c59e966d9d result is kept for 3600 seconds
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Worker 51ca17f041dc40d28e1c6154f6c2f054: csv: CSV TOP-N 5f9e1cefc1fc4f9494d8d3f111e3f7a2 (5f9e1cefc1fc4f9494d8d3f111e3f7a2)
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Successfully completed CSV TOP-N 5f9e1cefc1fc4f9494d8d3f111e3f7a2 job in 0:00:00.020244s on worker 51ca17f041dc40d28e1c6154f6c2f054
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Worker 51ca17f041dc40d28e1c6154f6c2f054: csv: Job OK (5f9e1cefc1fc4f9494d8d3f111e3f7a2)
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:26 Worker 51ca17f041dc40d28e1c6154f6c2f054: job 5f9e1cefc1fc4f9494d8d3f111e3f7a2 result is kept for 3600 seconds
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:33 Worker 51ca17f041dc40d28e1c6154f6c2f054: could not connect to Redis instance: Connection closed by server. retrying in 1 seconds...
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:33 Worker 51ca17f041dc40d28e1c6154f6c2f054: could not connect to Redis instance: Error 111 connecting to redis:6379. Connection refused. retrying in 2 seconds...
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:34 Worker 51ca17f041dc40d28e1c6154f6c2f054: could not connect to Redis instance: Error -2 connecting to redis:6379. Name or service not known. retrying in 2 seconds...
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:35 Worker 51ca17f041dc40d28e1c6154f6c2f054: could not connect to Redis instance: Error -2 connecting to redis:6379. Name or service not known. retrying in 2 seconds...
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:36 Worker 51ca17f041dc40d28e1c6154f6c2f054: could not connect to Redis instance: Error -2 connecting to redis:6379. Name or service not known. retrying in 4 seconds...
+ct-2026-practice-4_worker.2.l6qjqx6dkvs5@nl-vmnano-2    | 12:54:37 Worker 51ca17f041dc40d28e1c6154f6c2f054: could not connect to Redis instance: Error -2 connecting to redis:6379. Name or service not known. retrying in 2 seconds...

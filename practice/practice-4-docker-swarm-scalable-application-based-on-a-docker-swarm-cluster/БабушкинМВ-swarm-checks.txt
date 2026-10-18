@@ -1,0 +1,14 @@
+$ docker node ls; docker service ls; docker service ps ct-2026-practice-4_nginx
+ID                            HOSTNAME      STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+84kau6y87z958ew0x8gcb1xo4 *   nl-vmmini     Ready     Active         Leader           29.9.1
+26vjukdptjo5y0qxxjb7mzond     nl-vmnano-1   Ready     Active                          29.9.1
+tpcsmgbzuuhwz5a3jp17uxiq1     nl-vmnano-2   Ready     Active                          29.9.1
+ID             NAME                                   MODE         REPLICAS               IMAGE                                                         PORTS
+ui57x6xxbdbn   ct-2026-practice-4-registry_registry   replicated   1/1                    registry:2
+yabqkkffamw7   ct-2026-practice-4_api                 replicated   2/2                    10.77.4.1:5000/ct-2026-practice-4-csv-topn:2026-10-18-amd64   *:8085->8000/tcp
+rho5jztlh4vg   ct-2026-practice-4_nginx               replicated   2/2 (max 1 per node)   nginx:alpine                                                  *:8084->80/tcp
+b1zmwfvpytfb   ct-2026-practice-4_redis               replicated   1/1                    redis:7.4-alpine
+y03jx7ro9pha   ct-2026-practice-4_worker              replicated   2/2                    10.77.4.1:5000/ct-2026-practice-4-csv-topn:2026-10-18-amd64
+ID             NAME                         IMAGE          NODE          DESIRED STATE   CURRENT STATE            ERROR     PORTS
+f0wbxtgo6kf6   ct-2026-practice-4_nginx.1   nginx:alpine   nl-vmnano-1   Running         Running 10 minutes ago
+x27ap8jrwvny   ct-2026-practice-4_nginx.2   nginx:alpine   nl-vmnano-2   Running         Running 9 minutes ago

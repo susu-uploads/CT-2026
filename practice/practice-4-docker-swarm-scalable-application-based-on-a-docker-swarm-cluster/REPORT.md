@@ -1,12 +1,12 @@
 # Практика 4. Docker Swarm и асинхронный CSV TOP-N
 
-Автор: Бабушкин Михаил Вадимович. Подготовка: 17 октября 2026 года.
+Автор: Бабушкин Михаил Вадимович. Подготовка: 17 октября 2026 года. Облако: 18 октября 2026 года.
 
 ## Реализация и границы результата
 
 Один образ Python 3.12 используется API FastAPI/Uvicorn и процессами RQ. Redis хранит очередь, исходные CSV внутри аргументов заданий и результаты; AOF и volume сохраняют состояние при пересоздании контейнеров. Общая файловая система между узлами не нужна.
 
-В задании указан Flask. По выбору студента используется FastAPI; принятие замены преподавателем не подтверждено. Локальный Compose не заменяет требуемый Swarm из трех облачных узлов. Облачное развертывание, приватный registry и публичная доступность пока не проверены.
+В задании указан Flask. По выбору студента используется FastAPI; принятие замены преподавателем не подтверждено. Локальный Compose не заменяет требуемый Swarm из трех облачных узлов. Облачное развертывание выполнено 18 октября 2026 года; фактические проверки приведены ниже.
 
 ## API и обработка
 
@@ -55,101 +55,149 @@ docker compose up -d --scale worker=2 --wait
 
 Для проверки Redis выполнить `docker compose stop redis`: health, прием задания и чтение результата должны дать 503. Затем `docker compose start redis` и повторить тест. Для пересоздания использовать `docker compose down` без `-v`, затем `up`; volume не удалять.
 
-## Подготовка трех VPS
+## Облачное развертывание 18 октября 2026 года
 
-Требуются Ubuntu 24.04 x86_64, по 2 vCPU, 2 ГБ RAM и от 20 ГБ диска. Manager — VPS практики 1, плюс два worker в одной приватной сети. Нужны SSH-алиасы ct-manager, ct-worker1, ct-worker2, пользователи с sudo и локальные ключи. Приватные ключи, IP, токены Swarm и платежные данные в репозиторий не добавлять.
+| Узел | Публичный IP | wg0 | Роль |
+|---|---|---|---|
+| nl-vmmini | 176.222.53.58 | 10.77.4.1 | manager |
+| nl-vmnano-1 | 176.222.55.104 | 10.77.4.2 | worker |
+| nl-vmnano-2 | 176.222.55.129 | 10.77.4.3 | worker |
 
-До изменений проверить чужие контейнеры/Swarm, свободные 5000/8084/8085, объем диска и RAM. Установить Docker Engine и Compose из официального репозитория Docker на всех узлах; применить инструкцию Ubuntu из практики 2. Существующую конфигурацию Docker не перезаписывать. Не менять Apache/WordPress и порты 8080/8083 предыдущих практик.
+Доступ — SSH `practice4@<IP>` по ключу. Все узлы x86_64; Docker Engine 29.9.1. На nano Docker и Compose установлены из официального репозитория Docker; на manager существующая установка сохранена. Пользователь practice4 входит в docker. Docker-команды выполняются без sudo; административные — через предоставленный временный sudo. Существующий sudo-файл не удалялся. Manager и Docker daemon не перезапускались.
 
-На каждом узле настроить стабильное разрешение ct-registry в приватный IP manager. На firewall провайдера и хостов разрешить только между тремя узлами TCP/2377, TCP+UDP/7946 и UDP/4789. SSH ограничить IP студента. Открыть для демонстрации TCP/8084 и TCP/8085. Порт registry 5000 разрешить только трем узлам; не открывать внешне. Учитывать NAT-правила Docker: UFW сам по себе не гарантирует фильтрацию опубликованных портов. Проверить ограничения с разрешенного узла и внешнего компьютера.
+### Резервные копии и установка
 
-На manager (значение MANAGER_PRIVATE_IP задать в текущей SSH-сессии):
-
-```bash
-sudo docker swarm init --advertise-addr "$MANAGER_PRIVATE_IP"
-sudo docker swarm join-token worker
-```
-
-Команду присоединения с полученным токеном выполнить на каждом worker через SSH. Токен не сохранять в отчете. На manager:
+До изменений на каждом узле созданы `/root/20261018-practice4/baseline.txt` (адреса, маршруты, порты, службы, IPv4/IPv6 firewall) и копия `/etc/netplan`. На manager список контейнеров сохранен в `~/practice4-before-containers.txt`. Установочные команды:
 
 ```bash
-sudo docker node ls
+sudo apt-get update -qq
+sudo apt-get install -y wireguard ca-certificates curl openssl
 ```
 
-Требуются три Ready/Active узла, один Leader и два worker. Конфигурации Swarm запускать с manager.
-
-## TLS и приватный registry
-
-Сгенерировать собственную CA и серверный сертификат на manager в приватном каталоге вне Git. Не запускать команды поверх существующих ключей.
+Только на nano:
 
 ```bash
-umask 077
-mkdir -p ~/practice4-private
-cd ~/practice4-private
-openssl req -x509 -newkey rsa:3072 -nodes -days 365 \
-  -keyout ca.key -out ca.crt -subj '/CN=CT Practice Registry CA' \
-  -addext 'basicConstraints=critical,CA:TRUE' \
-  -addext 'keyUsage=critical,keyCertSign,cRLSign'
-openssl req -newkey rsa:3072 -nodes -keyout registry.key \
-  -out registry.csr -subj '/CN=ct-registry'
-printf '%s\n' 'subjectAltName=DNS:ct-registry' \
-  'extendedKeyUsage=serverAuth' 'keyUsage=digitalSignature,keyEncipherment' > registry.ext
-openssl x509 -req -in registry.csr -CA ca.crt -CAkey ca.key \
-  -CAcreateserial -out registry.crt -days 90 -extfile registry.ext
-sudo docker secret create ct-registry-cert registry.crt
-sudo docker secret create ct-registry-key registry.key
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+. /etc/os-release
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $VERSION_CODENAME stable" | sudo tee /etc/apt/sources.list.d/docker.list
+sudo apt-get update -qq
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo usermod -aG docker practice4
 ```
 
-Передать только публичный ca.crt на каждый узел, установить в `/etc/docker/certs.d/ct-registry:5000/ca.crt`. CA private key и server key не передавать worker и не включать в отчет. Проверить, что Docker доверяет сертификату; если потребуется перезапуск Docker, сначала оценить влияние на предыдущие практики.
+Hostname nano изменены через `hostnamectl set-hostname nl-vmnano-1` и `nl-vmnano-2`; соответствующее имя добавлено к 127.0.1.1 в `/etc/hosts`. Общее обновление пакетов manager не выполнялось.
 
-Передать registry-stack.yaml на manager, выполнить из каталога с конфигурацией:
+### WireGuard и фильтрация
+
+На каждом узле `wg genkey` создал ключ в `/etc/wireguard/private.key`, `wg pubkey` — публичный ключ. Ключи и `/etc/wireguard/wg0.conf` доступны только root. В конфигурации: адрес из таблицы `/24`, UDP/51820, MTU 1420, два peer с публичными Endpoint и `AllowedIPs` только соответствующего адреса `/32`, `PersistentKeepalive=25`. Приватные ключи при настройке подставлялись на сервере, не передавались на Mac и не включались в журнал.
 
 ```bash
-sudo docker stack deploy -c registry-stack.yaml ct-registry
-sudo docker service ps ct-registry_registry
-curl --cacert ~/practice4-private/ca.crt https://ct-registry:5000/v2/
+sudo systemctl enable --now wg-quick@wg0
+sudo wg show wg0 latest-handshakes
+sudo ping -c 2 -W 3 10.77.4.1
+sudo ping -c 2 -W 3 10.77.4.2
+sudo ping -c 2 -W 3 10.77.4.3
 ```
 
-Проверить HTTPS с каждого узла. Registry закреплен на manager с локальным volume; сеть ограничивает доступ кластером, пользовательская аутентификация registry не добавляется. Внешняя проверка порта 5000 должна подтвердить недоступность. Не использовать insecure-registries и не отключать проверку TLS.
+Все пары узлов проверены; [журнал сети](БабушкинМВ-network-checks.txt). Маршрут по умолчанию и SSH сохранены. На nano ping требует sudo из-за отсутствия capability у системного ping.
 
-## Образ и Swarm stack
+UFW не включался. Установлен `/usr/local/sbin/ct-practice4-network-guard`, вызываемый systemd-unit `ct-practice4-network-guard.service`. Unit включен в multi-user.target и docker.service, имеет `After=docker.service wg-quick@wg0.service`, `PartOf=docker.service`. Применены IPv4 и IPv6 правила: цепочка CT4-IN отбрасывает TCP/2377,7946,5000 и UDP/7946,4789; для остальных портов RETURN. Переходы добавлены только для публичного интерфейса `enp1s0` в INPUT, FORWARD и существующую DOCKER-USER. Трафик wg0 этими правилами не ограничивается. Публичные SSH и веб-порты сохранены. Внешние TCP-пробы не подключились; UDP-пробы увеличили счетчик DROP. После reboot автозапуск настроен, но сам reboot не выполнялся.
 
-На Mac из каталога практики:
+### Swarm и MTU
+
+На manager:
 
 ```bash
-mkdir -p .cache
-docker buildx build --platform linux/amd64 --load -t susu-cloud-practice4:2026-10-17 .
-docker save -o .cache/practice4-amd64.tar susu-cloud-practice4:2026-10-17
-shasum -a 256 .cache/practice4-amd64.tar
-ssh ct-manager 'mkdir -p ~/practice4'
-scp .cache/practice4-amd64.tar stack.yaml registry-stack.yaml ct-manager:practice4/
+docker swarm init --advertise-addr 10.77.4.1 --listen-addr 10.77.4.1:2377 --data-path-addr 10.77.4.1 --default-addr-pool 10.78.0.0/16 --default-addr-pool-mask-length 24
 ```
 
-На manager сравнить SHA-256 и затем:
+Оба worker присоединены с приватными advertise/data-path адресами и токеном, полученным через `docker swarm join-token -q worker`. Значение токена в отчете не сохраняется. После присоединения:
 
 ```bash
-cd ~/practice4
-sha256sum practice4-amd64.tar
-sudo docker load -i practice4-amd64.tar
-sudo docker tag susu-cloud-practice4:2026-10-17 ct-registry:5000/csv-topn:2026-10-17
-sudo docker push ct-registry:5000/csv-topn:2026-10-17
-sudo env REGISTRY_HOST=ct-registry docker stack deploy -c stack.yaml ct-practice4
-sudo docker stack services ct-practice4
-sudo docker service ps ct-practice4_nginx
-sudo docker service ps ct-practice4_api
+printf 'y\n' | docker network rm ingress
+# Дождаться удаления исходной ingress-сети.
+docker network create --driver overlay --ingress --subnet 10.79.4.0/24 --opt com.docker.network.driver.mtu=1350 ingress
+docker node ls
 ```
 
-Перед deploy вручную проверить `docker pull ct-registry:5000/csv-topn:2026-10-17` на каждом worker. Образы заранее публикуются: stack deploy не выполняет build. Nginx имеет две реплики с ограничением одной на worker; API и worker могут масштабироваться независимо. Redis закреплен на manager, отдельная overlay-сеть csv используется только приложением. В Swarm нет ожидания Compose depends_on: API сообщает 503 до готовности Redis, worker перезапускается средствами Swarm.
+Для сети приложения в stack задан MTU 1350. Все три узла Ready/Active, manager Leader. Исходные bridge-сети предыдущих практик не удалялись.
 
-## Облачная демонстрация
+### Registry с TLS
 
-- Проверить nginx через публичный IP любого узла на 8084. Через service ps подтвердить размещение двух реплик на разных worker.
-- Проверить API на 8085 и HTTP-тест с Mac: `python3 test_app.py http://<IP>:8085`.
-- Масштабировать API 1 → 2 → 4 → 2 через `sudo docker service scale ct-practice4_api=<число>`. На каждом шаге дождаться нужного количества Running tasks и сохранить service ps. Повторные запросы /instance с отдельными соединениями должны показать разные контейнеры, но не обязаны чередоваться строго.
-- Масштабировать worker 1 → 2, поставить пакет заданий и показать работу обоих worker по журналам, ID и времени выполнения. Ускорение не гарантировать: короткие задания и ресурсы влияют на время.
-- Проверить сохранность завершенного результата после пересоздания API/worker; Redis и его volume не удалять.
-- Проверить отказ Redis и восстановление, затем подтвердить работу WordPress и практик 2–3.
-- Сохранить облачные скриншоты, версии и фактические результаты. Сдача выполняется студентом. Удаление VM, secrets и volumes согласовать отдельно.
+Файлы CA и сертификата созданы на manager в `~/ct-2026-practice-4/tls` с umask 077. CA: RSA 3072, CN `CT 2026 Practice 4 CA`, срок 365 дней; серверный сертификат: RSA 3072, CN и IP SAN `10.77.4.1`, serverAuth, срок 365 дней. Приватные ключи остались на manager. Только публичный CA-сертификат установлен на всех узлах в `/etc/docker/certs.d/10.77.4.1:5000/ca.crt`.
+
+```bash
+docker secret create ct-registry-cert tls/registry.crt
+docker secret create ct-registry-key tls/registry.key
+docker stack deploy -c registry-stack.yaml ct-2026-practice-4-registry
+curl --cacert /etc/docker/certs.d/10.77.4.1:5000/ca.crt https://10.77.4.1:5000/v2/
+```
+
+Каждый узел получил `{}` от HTTPS registry. Registry закреплен на manager, использует постоянный volume и Swarm secrets, публикует 5000 в host mode; публичный доступ блокируется правилами выше. Проверка TLS не отключалась, insecure-registries не использовался. Доверие Docker заработало без рестарта daemon.
+
+### Сборка и запуск
+
+На Mac из папки практики:
+
+```bash
+docker buildx build --platform linux/arm64 --load -t ct-2026-practice-4-csv-topn:2026-10-18-arm64 .
+docker buildx build --platform linux/amd64 --load -t ct-2026-practice-4-csv-topn:2026-10-18-amd64 .
+docker save -o .cache/ct-2026-practice-4-csv-topn-amd64.tar ct-2026-practice-4-csv-topn:2026-10-18-amd64
+shasum -a 256 .cache/ct-2026-practice-4-csv-topn-amd64.tar
+ssh practice4@176.222.53.58 'mkdir -p ~/ct-2026-practice-4'
+scp .cache/ct-2026-practice-4-csv-topn-amd64.tar stack.yaml registry-stack.yaml practice4@176.222.53.58:ct-2026-practice-4/
+```
+
+SHA-256 на Mac и manager совпал: `ea7ef30809d5496761c417749082bd8e40305a687c070f8b40f42053ecdaaca7`.
+
+На manager из `~/ct-2026-practice-4`:
+
+```bash
+docker load -i ct-2026-practice-4-csv-topn-amd64.tar
+docker tag ct-2026-practice-4-csv-topn:2026-10-18-amd64 10.77.4.1:5000/ct-2026-practice-4-csv-topn:2026-10-18-amd64
+docker push 10.77.4.1:5000/ct-2026-practice-4-csv-topn:2026-10-18-amd64
+```
+
+На каждом worker выполнен `docker pull 10.77.4.1:5000/ct-2026-practice-4-csv-topn:2026-10-18-amd64`. Digest совпал на трех узлах: `sha256:85fa5aa2310296626bf37dd61bfc84d73f4742970f16981b03fca45a073f98ad`. Затем на manager:
+
+```bash
+docker stack deploy -c stack.yaml ct-2026-practice-4
+docker service ls
+docker service ps ct-2026-practice-4_nginx
+```
+
+Nginx работает на 8084 с двумя репликами на разных nano, API — на 8085 с двумя репликами. Два фоновых worker обрабатывают общую очередь. Redis закреплен на manager с AOF и отдельным volume, порт 6379 не публикуется. Stack и локальный Compose используют фиксированные значения без .env и подстановок. Код и API не менялись.
+
+### Проверки и демонстрация
+
+[Полный журнал облачных проверок](БабушкинМВ-cloud-checks.txt), [журнал работы двух worker](БабушкинМВ-worker-scaling.txt).
+
+```bash
+python3 test_tasks.py
+python3 test_app.py http://127.0.0.1:8005
+python3 test_app.py http://176.222.53.58:8085
+```
+
+Все 5 unit-тестов и HTTP-тесты прошли. Проверены обычный CSV, BOM, стабильный порядок равных значений, N больше количества строк, неверные заголовки, столбцы, числа, UTF-8, строки, превышение 5 МиБ, 422 и отсутствующие задания 404. Через браузер загружен БабушкинМВ-example.csv, получены Keyboard/350, Headphones/350, Mouse/200.
+
+На manager последовательно выполнялись:
+
+```bash
+docker service scale ct-2026-practice-4_api=1
+docker service scale ct-2026-practice-4_api=2
+docker service scale ct-2026-practice-4_api=4
+docker service scale ct-2026-practice-4_api=2
+```
+
+На каждом шаге `/instance` показал соответствующее число разных контейнеров. Running task еще не гарантирует готовность Uvicorn: один запрос при старте реплики получил connection refused; проверка повторена с ожиданием фактического ответа.
+
+Для очереди worker масштабировались в 0, затем `test_app.py --capacity` принял 10 из 16 конкурентных запросов, остальные получили 429. Принятые задания обработаны одним worker. Проверка повторена с двумя worker; журнал подтверждает успешные задания на обоих nano. Ускорение не измерялось.
+
+Redis масштабирован в 0: health, прием задания и чтение результата вернули 503 с короткой ошибкой. После возврата в 1 результат сохранился и совпал. После `docker service update --force --detach=true ct-2026-practice-4_api` результат также сохранился.
+
+Порты 8084 и 8085 проверены с Mac на каждом публичном IP. Порты 80, 8080, 8083 manager вернули HTTP 200. Службы предыдущих практик не перенастраивались.
 
 ## Связь с дополнительным заданием
 
@@ -186,3 +234,21 @@ Mac ARM64, Docker Engine 29.3.1; Python контейнера 3.12.15, FastAPI 0.
 ![CSV TOP-N в браузере](БабушкинМВ-topn.png)
 
 ![Локальные контейнеры и TTL](БабушкинМВ-containers.png)
+
+## Итог облачного этапа
+
+Проверка потери worker использовала синтетическое задание `time.sleep(30)` с timeout 5 секунд, без CSV. Единственный worker был принудительно остановлен через `docker kill --signal KILL` после состояния started. После истечения срока RQ задание перешло в failed с короткой ошибкой; повторного выполнения не было. Swarm восстановил контейнер, затем число worker возвращено к двум. [Журнал отказа](БабушкинМВ-worker-loss.txt).
+
+Передача 1 179 648 байт между API на одном worker, Redis на manager и API на другом worker прошла с полным сравнением данных. Тестовый ключ удален. Проверены фактические TTL ключей задания и результата; часовое ожидание не выполнялось.
+
+Старые локальные контейнеры проекта ct-practice4 удалены при переходе на ct-2026-practice-4. Прежний локальный volume ct-practice4_csv-data сохранен и подключен как внешний; локальные unit/HTTP-тесты после перехода прошли. Старый тег susu-cloud-practice4:2026-10-17 удален после успешных проверок. На VPS таких образов не было. Общий prune не применялся.
+
+Итог: 3 Ready/Active узла, registry 1/1, nginx 2/2 на разных worker, API 2/2, worker 2/2, Redis 1/1. Публичные адреса: http://176.222.53.58:8084/ и http://176.222.53.58:8085/. Полный вывод: [состояние Swarm](БабушкинМВ-swarm-checks.txt).
+
+![Облачный CSV TOP-N](БабушкинМВ-cloud-topn.png)
+
+![Публичный nginx](БабушкинМВ-cloud-nginx.png)
+
+![Облачный Swarm](БабушкинМВ-cloud-swarm.png)
+
+Снимок Swarm — HTML-представление фактического вывода Docker CLI через SSH, не интерфейс Docker Desktop. Исторические результаты и скриншоты 17 октября сохранены. Сдачу выполняет студент. Отказоустойчивость единственного manager и Redis не реализована; на публичной форме использовать только тестовые CSV. Изменения практики 4 подготовлены отдельным коммитом для публикации по запросу студента.

@@ -1,4 +1,4 @@
-name: ct-practice4
+name: ct-2026-practice-4
 services:
   redis:
     image: redis:7.4-alpine
@@ -11,7 +11,7 @@ services:
       retries: 30
     restart: unless-stopped
   api:
-    image: susu-cloud-practice4:2026-10-17
+    image: ct-2026-practice-4-csv-topn:2026-10-18-arm64
     build: .
     environment:
       REDIS_URL: redis://redis:6379/0
@@ -21,7 +21,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
   worker:
-    image: susu-cloud-practice4:2026-10-17
+    image: ct-2026-practice-4-csv-topn:2026-10-18-arm64
     command: [python, worker.py]
     environment:
       REDIS_URL: redis://redis:6379/0
@@ -31,3 +31,5 @@ services:
     restart: unless-stopped
 volumes:
   csv-data:
+    external: true
+    name: ct-practice4_csv-data

@@ -1,0 +1,102 @@
+Full CSV/API HTTP checks: PASS
+176.222.53.58:8084 HTTP 200
+176.222.53.58:8085 HTTP 200
+176.222.53.58:2377 public TCP blocked/unreachable
+176.222.53.58:7946 public TCP blocked/unreachable
+176.222.53.58:5000 public TCP blocked/unreachable
+176.222.55.104:8084 HTTP 200
+176.222.55.104:8085 HTTP 200
+176.222.55.104:2377 public TCP blocked/unreachable
+176.222.55.104:7946 public TCP blocked/unreachable
+176.222.55.104:5000 public TCP blocked/unreachable
+176.222.55.129:8084 HTTP 200
+176.222.55.129:8085 HTTP 200
+176.222.55.129:2377 public TCP blocked/unreachable
+176.222.55.129:7946 public TCP blocked/unreachable
+176.222.55.129:5000 public TCP blocked/unreachable
+$ ssh practice4@176.222.53.58 docker service scale --detach=true ct-2026-practice-4_api=1
+ct-2026-practice-4_api scaled to 1
+api replicas=1/1
+Instances: ['988a55a7c9b6']
+$ ssh practice4@176.222.53.58 docker service scale --detach=true ct-2026-practice-4_api=2
+ct-2026-practice-4_api scaled to 2
+api replicas=2/2
+$ ssh practice4@176.222.53.58 docker service scale --detach=true ct-2026-practice-4_api=1
+ct-2026-practice-4_api scaled to 1
+api replicas=1/1
+Instances: ['988a55a7c9b6']
+$ ssh practice4@176.222.53.58 docker service scale --detach=true ct-2026-practice-4_api=2
+ct-2026-practice-4_api scaled to 2
+api replicas=2/2
+Instances: ['1c7f07af1d1e', '988a55a7c9b6']
+$ ssh practice4@176.222.53.58 docker service scale --detach=true ct-2026-practice-4_api=4
+ct-2026-practice-4_api scaled to 4
+api replicas=4/4
+Instances: ['1c7f07af1d1e', '204ea1e1178a', '988a55a7c9b6', 'c74d78232a76']
+$ ssh practice4@176.222.53.58 docker service scale --detach=true ct-2026-practice-4_api=2
+ct-2026-practice-4_api scaled to 2
+api replicas=2/2
+Instances: ['1c7f07af1d1e', '988a55a7c9b6']
+$ ssh practice4@176.222.53.58 docker service scale --detach=true ct-2026-practice-4_worker=0
+ct-2026-practice-4_worker scaled to 0
+worker replicas=0/0
+Queue capacity: 10 accepted, 6 rejected
+$ ssh practice4@176.222.53.58 docker service scale --detach=true ct-2026-practice-4_worker=1
+ct-2026-practice-4_worker scaled to 1
+worker replicas=1/1
+Queued jobs processed with 1 worker: PASS
+$ ssh practice4@176.222.53.58 docker service scale --detach=true ct-2026-practice-4_worker=0
+ct-2026-practice-4_worker scaled to 0
+worker replicas=0/0
+$ ssh practice4@176.222.53.58 docker service scale --detach=true ct-2026-practice-4_worker=2
+ct-2026-practice-4_worker scaled to 2
+worker replicas=2/2
+Queued jobs processed with 2 workers: PASS
+$ ssh practice4@176.222.53.58 docker service scale --detach=true ct-2026-practice-4_redis=0
+ct-2026-practice-4_redis scaled to 0
+redis replicas=0/0
+/health HTTP 503: {"detail": "Очередь временно недоступна."}
+/jobs/feb0ca062f0b4c3681e2d6c7c6d340b5 HTTP 503: {"detail": "Очередь временно недоступна."}
+/jobs HTTP 503: {"detail": "Очередь временно недоступна."}
+$ ssh practice4@176.222.53.58 docker service scale --detach=true ct-2026-practice-4_redis=1
+ct-2026-practice-4_redis scaled to 1
+redis replicas=1/1
+Redis recreation, recovery, result persistence: PASS
+$ ssh practice4@176.222.53.58 docker service update --force --detach=true ct-2026-practice-4_api
+ct-2026-practice-4_api
+Result preserved after API recreation: PASS
+$ ssh practice4@176.222.53.58 docker node ls; docker service ls; docker service ps ct-2026-practice-4_nginx
+ID                            HOSTNAME      STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+84kau6y87z958ew0x8gcb1xo4 *   nl-vmmini     Ready     Active         Leader           29.9.1
+26vjukdptjo5y0qxxjb7mzond     nl-vmnano-1   Ready     Active                          29.9.1
+tpcsmgbzuuhwz5a3jp17uxiq1     nl-vmnano-2   Ready     Active                          29.9.1
+ID             NAME                                   MODE         REPLICAS               IMAGE                                                         PORTS
+ui57x6xxbdbn   ct-2026-practice-4-registry_registry   replicated   1/1                    registry:2
+yabqkkffamw7   ct-2026-practice-4_api                 replicated   2/2                    10.77.4.1:5000/ct-2026-practice-4-csv-topn:2026-10-18-amd64   *:8085->8000/tcp
+rho5jztlh4vg   ct-2026-practice-4_nginx               replicated   2/2 (max 1 per node)   nginx:alpine                                                  *:8084->80/tcp
+b1zmwfvpytfb   ct-2026-practice-4_redis               replicated   1/1                    redis:7.4-alpine
+y03jx7ro9pha   ct-2026-practice-4_worker              replicated   2/2                    10.77.4.1:5000/ct-2026-practice-4-csv-topn:2026-10-18-amd64
+ID             NAME                         IMAGE          NODE          DESIRED STATE   CURRENT STATE           ERROR     PORTS
+f0wbxtgo6kf6   ct-2026-practice-4_nginx.1   nginx:alpine   nl-vmnano-1   Running         Running 2 minutes ago
+x27ap8jrwvny   ct-2026-practice-4_nginx.2   nginx:alpine   nl-vmnano-2   Running         Running 2 minutes ago
+$ ssh practice4@176.222.53.58 docker image inspect 10.77.4.1:5000/ct-2026-practice-4-csv-topn:2026-10-18-amd64 --format "{{.Architecture}} {{json .RepoDigests}}"
+amd64 ["10.77.4.1:5000/ct-2026-practice-4-csv-topn@sha256:85fa5aa2310296626bf37dd61bfc84d73f4742970f16981b03fca45a073f98ad","ct-2026-practice-4-csv-topn@sha256:85fa5aa2310296626bf37dd61bfc84d73f4742970f16981b03fca45a073f98ad"]
+$ ssh practice4@176.222.55.104 docker image inspect 10.77.4.1:5000/ct-2026-practice-4-csv-topn:2026-10-18-amd64 --format "{{.Architecture}} {{json .RepoDigests}}"
+amd64 ["10.77.4.1:5000/ct-2026-practice-4-csv-topn@sha256:85fa5aa2310296626bf37dd61bfc84d73f4742970f16981b03fca45a073f98ad","10.77.4.1:5000/ct-2026-practice-4-csv-topn:2026-10-18-amd64@sha256:85fa5aa2310296626bf37dd61bfc84d73f4742970f16981b03fca45a073f98ad"]
+$ ssh practice4@176.222.55.129 docker image inspect 10.77.4.1:5000/ct-2026-practice-4-csv-topn:2026-10-18-amd64 --format "{{.Architecture}} {{json .RepoDigests}}"
+amd64 ["10.77.4.1:5000/ct-2026-practice-4-csv-topn@sha256:85fa5aa2310296626bf37dd61bfc84d73f4742970f16981b03fca45a073f98ad","10.77.4.1:5000/ct-2026-practice-4-csv-topn:2026-10-18-amd64@sha256:85fa5aa2310296626bf37dd61bfc84d73f4742970f16981b03fca45a073f98ad"]
+Previous practice on 80: HTTP 200
+Previous practice on 8080: HTTP 200
+Previous practice on 8083: HTTP 200
+CLOUD CHECKS PASS
+176.222.55.104 Stored 1179648 bytes
+176.222.55.129 Cross-node overlay transfer PASS: 1179648 bytes
+$ docker image rm susu-cloud-practice4:2026-10-17
+Untagged: susu-cloud-practice4:2026-10-17
+Deleted: sha256:ba4b227904ddcc3cda725da6b1cd76844b5e7cea5006bbfe33aa9ffc6510a877
+176.222.53.58 old practice4 images: none
+176.222.55.104 old practice4 images: none
+176.222.55.129 old practice4 images: none
+TTL job / result for feb0ca062f0b4c3681e2d6c7c6d340b5 (seconds):
+3092
+3092

@@ -1,0 +1,7 @@
+ct-2026-practice-4_worker scaled to 1
+Synthetic job 472087c4-9b44-4d9e-96a3-a8b055e4f652 timeout=5, sleep=30; no CSV data
+Job started on the only worker; killing container 7fef53ae606d on 176.222.55.104
+7fef53ae606d
+{"job_id": "472087c4-9b44-4d9e-96a3-a8b055e4f652", "status": "failed", "error": "Обработка прервана или не выполнена."}
+ct-2026-practice-4_worker scaled to 2
+Worker loss: started -> failed, no automatic retry. Swarm replaces container.

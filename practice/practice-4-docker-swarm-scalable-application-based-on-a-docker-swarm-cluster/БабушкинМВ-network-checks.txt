@@ -1,0 +1,153 @@
+176.222.53.58 Vsv+OG0luhBMYpsk0NMV/2uEDfoUcK8Nt6FjytK8iQM=
+25: wg0: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1420 qdisc noqueue state UNKNOWN group default qlen 1000
+    inet 10.77.4.1/24 scope global wg0
+       valid_lft forever preferred_lft forever
+176.222.55.104 AMRIAmwe9JEY0s/CUULGQFvAKYd79pSD+n4hBOH8uEM=
+5: wg0: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1420 qdisc noqueue state UNKNOWN group default qlen 1000
+    inet 10.77.4.2/24 scope global wg0
+       valid_lft forever preferred_lft forever
+176.222.55.129 OSwRAPxIF89ZjloQoYhFliG8rAcq/GaqrMfTf0ObvgI=
+5: wg0: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1420 qdisc noqueue state UNKNOWN group default qlen 1000
+    inet 10.77.4.3/24 scope global wg0
+       valid_lft forever preferred_lft forever
+176.222.53.58 PING 10.77.4.1 (10.77.4.1) 56(84) bytes of data.
+64 bytes from 10.77.4.1: icmp_seq=1 ttl=64 time=0.127 ms
+64 bytes from 10.77.4.1: icmp_seq=2 ttl=64 time=0.070 ms
+
+--- 10.77.4.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1046ms
+rtt min/avg/max/mdev = 0.070/0.098/0.127/0.028 ms
+176.222.53.58 PING 10.77.4.2 (10.77.4.2) 56(84) bytes of data.
+64 bytes from 10.77.4.2: icmp_seq=1 ttl=64 time=4.05 ms
+64 bytes from 10.77.4.2: icmp_seq=2 ttl=64 time=1.29 ms
+
+--- 10.77.4.2 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1001ms
+rtt min/avg/max/mdev = 1.287/2.670/4.054/1.383 ms
+176.222.53.58 PING 10.77.4.3 (10.77.4.3) 56(84) bytes of data.
+64 bytes from 10.77.4.3: icmp_seq=1 ttl=64 time=1.83 ms
+64 bytes from 10.77.4.3: icmp_seq=2 ttl=64 time=2.31 ms
+
+--- 10.77.4.3 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1001ms
+rtt min/avg/max/mdev = 1.825/2.069/2.313/0.244 ms
+
+176.222.53.58 $ sudo ping -c 2 -W 3 10.77.4.1
+PING 10.77.4.1 (10.77.4.1) 56(84) bytes of data.
+64 bytes from 10.77.4.1: icmp_seq=1 ttl=64 time=0.107 ms
+64 bytes from 10.77.4.1: icmp_seq=2 ttl=64 time=0.107 ms
+
+--- 10.77.4.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1059ms
+rtt min/avg/max/mdev = 0.107/0.107/0.107/0.000 ms
+
+176.222.53.58 $ sudo ping -c 2 -W 3 10.77.4.2
+PING 10.77.4.2 (10.77.4.2) 56(84) bytes of data.
+64 bytes from 10.77.4.2: icmp_seq=1 ttl=64 time=2.40 ms
+64 bytes from 10.77.4.2: icmp_seq=2 ttl=64 time=1.79 ms
+
+--- 10.77.4.2 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 1.786/2.093/2.401/0.307 ms
+
+176.222.53.58 $ sudo ping -c 2 -W 3 10.77.4.3
+PING 10.77.4.3 (10.77.4.3) 56(84) bytes of data.
+64 bytes from 10.77.4.3: icmp_seq=1 ttl=64 time=2.57 ms
+64 bytes from 10.77.4.3: icmp_seq=2 ttl=64 time=1.52 ms
+
+--- 10.77.4.3 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 1.516/2.041/2.566/0.525 ms
+
+176.222.55.104 $ sudo ping -c 2 -W 3 10.77.4.1
+PING 10.77.4.1 (10.77.4.1) 56(84) bytes of data.
+64 bytes from 10.77.4.1: icmp_seq=1 ttl=64 time=1.93 ms
+64 bytes from 10.77.4.1: icmp_seq=2 ttl=64 time=1.56 ms
+
+--- 10.77.4.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1001ms
+rtt min/avg/max/mdev = 1.558/1.744/1.931/0.186 ms
+
+176.222.55.104 $ sudo ping -c 2 -W 3 10.77.4.2
+PING 10.77.4.2 (10.77.4.2) 56(84) bytes of data.
+64 bytes from 10.77.4.2: icmp_seq=1 ttl=64 time=0.145 ms
+64 bytes from 10.77.4.2: icmp_seq=2 ttl=64 time=0.102 ms
+
+--- 10.77.4.2 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1029ms
+rtt min/avg/max/mdev = 0.102/0.123/0.145/0.021 ms
+
+176.222.55.104 $ sudo ping -c 2 -W 3 10.77.4.3
+PING 10.77.4.3 (10.77.4.3) 56(84) bytes of data.
+64 bytes from 10.77.4.3: icmp_seq=1 ttl=64 time=3.25 ms
+64 bytes from 10.77.4.3: icmp_seq=2 ttl=64 time=1.75 ms
+
+--- 10.77.4.3 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 1.750/2.497/3.245/0.747 ms
+
+176.222.55.129 $ sudo ping -c 2 -W 3 10.77.4.1
+PING 10.77.4.1 (10.77.4.1) 56(84) bytes of data.
+64 bytes from 10.77.4.1: icmp_seq=1 ttl=64 time=2.68 ms
+64 bytes from 10.77.4.1: icmp_seq=2 ttl=64 time=1.98 ms
+
+--- 10.77.4.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 1.984/2.333/2.683/0.349 ms
+
+176.222.55.129 $ sudo ping -c 2 -W 3 10.77.4.2
+PING 10.77.4.2 (10.77.4.2) 56(84) bytes of data.
+64 bytes from 10.77.4.2: icmp_seq=1 ttl=64 time=1.62 ms
+64 bytes from 10.77.4.2: icmp_seq=2 ttl=64 time=5.43 ms
+
+--- 10.77.4.2 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1001ms
+rtt min/avg/max/mdev = 1.617/3.522/5.428/1.905 ms
+
+176.222.55.129 $ sudo ping -c 2 -W 3 10.77.4.3
+PING 10.77.4.3 (10.77.4.3) 56(84) bytes of data.
+64 bytes from 10.77.4.3: icmp_seq=1 ttl=64 time=0.133 ms
+64 bytes from 10.77.4.3: icmp_seq=2 ttl=64 time=0.154 ms
+
+--- 10.77.4.3 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1021ms
+rtt min/avg/max/mdev = 0.133/0.143/0.154/0.010 ms
+
+176.222.53.58 after public UDP probes
+Chain CT4-IN (3 references)
+ pkts bytes target     prot opt in     out     source               destination
+   15   960 DROP       6    --  *      *       0.0.0.0/0            0.0.0.0/0            multiport dports 2377,7946,5000
+    2   102 DROP       17   --  *      *       0.0.0.0/0            0.0.0.0/0            multiport dports 7946,4789
+18081   24M RETURN     0    --  *      *       0.0.0.0/0            0.0.0.0/0
+-N CT4-IN
+-A CT4-IN -p tcp -m multiport --dports 2377,7946,5000 -j DROP
+-A CT4-IN -p udp -m multiport --dports 7946,4789 -j DROP
+-A CT4-IN -j RETURN
+enabled
+enabled
+
+176.222.55.104 after public UDP probes
+Chain CT4-IN (3 references)
+ pkts bytes target     prot opt in     out     source               destination
+    6   384 DROP       6    --  *      *       0.0.0.0/0            0.0.0.0/0            multiport dports 2377,7946,5000
+    2   102 DROP       17   --  *      *       0.0.0.0/0            0.0.0.0/0            multiport dports 7946,4789
+47303   92M RETURN     0    --  *      *       0.0.0.0/0            0.0.0.0/0
+-N CT4-IN
+-A CT4-IN -p tcp -m multiport --dports 2377,7946,5000 -j DROP
+-A CT4-IN -p udp -m multiport --dports 7946,4789 -j DROP
+-A CT4-IN -j RETURN
+enabled
+enabled
+
+176.222.55.129 after public UDP probes
+Chain CT4-IN (3 references)
+ pkts bytes target     prot opt in     out     source               destination
+   21  1344 DROP       6    --  *      *       0.0.0.0/0            0.0.0.0/0            multiport dports 2377,7946,5000
+    2   102 DROP       17   --  *      *       0.0.0.0/0            0.0.0.0/0            multiport dports 7946,4789
+42760   86M RETURN     0    --  *      *       0.0.0.0/0            0.0.0.0/0
+-N CT4-IN
+-A CT4-IN -p tcp -m multiport --dports 2377,7946,5000 -j DROP
+-A CT4-IN -p udp -m multiport --dports 7946,4789 -j DROP
+-A CT4-IN -j RETURN
+enabled
+enabled
