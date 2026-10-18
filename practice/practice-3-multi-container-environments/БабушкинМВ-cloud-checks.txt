@@ -1,0 +1,156 @@
+=== http://127.0.0.1:8003 ===
+Existing HTTP test: PASS
+$ docker compose down
+ Container ct-2026-practice-3-web-1 Stopping
+ Container ct-2026-practice-3-web-1 Stopped
+ Container ct-2026-practice-3-web-1 Removing
+ Container ct-2026-practice-3-web-1 Removed
+ Container ct-2026-practice-3-redis-1 Stopping
+ Container ct-2026-practice-3-redis-1 Stopped
+ Container ct-2026-practice-3-redis-1 Removing
+ Container ct-2026-practice-3-redis-1 Removed
+ Network ct-2026-practice-3_default Removing
+ Network ct-2026-practice-3_default Removed
+$ docker compose up -d --no-build --wait
+ Network ct-2026-practice-3_default Creating
+ Network ct-2026-practice-3_default Creating
+ Network ct-2026-practice-3_default Created
+ Network ct-2026-practice-3_default Created
+ Container ct-2026-practice-3-redis-1 Creating
+ Container ct-2026-practice-3-redis-1 Created
+ Container ct-2026-practice-3-web-1 Creating
+ Container ct-2026-practice-3-web-1 Created
+ Container ct-2026-practice-3-redis-1 Starting
+ Container ct-2026-practice-3-redis-1 Started
+ Container ct-2026-practice-3-redis-1 Waiting
+ Container ct-2026-practice-3-redis-1 Healthy
+ Container ct-2026-practice-3-web-1 Starting
+ Container ct-2026-practice-3-web-1 Started
+ Container ct-2026-practice-3-web-1 Waiting
+ Container ct-2026-practice-3-redis-1 Waiting
+ Container ct-2026-practice-3-redis-1 Healthy
+ Container ct-2026-practice-3-web-1 Healthy
+Persistence after recreation: PASS
+$ docker compose stop redis
+ Container ct-2026-practice-3-redis-1 Stopping
+ Container ct-2026-practice-3-redis-1 Stopped
+/health: 503, no traceback
+/api/notes: 503, no traceback
+/api/notes: 503, no traceback
+$ docker compose start redis
+ Container ct-2026-practice-3-redis-1 Starting
+ Container ct-2026-practice-3-redis-1 Started
+Redis recovery: PASS
+$ docker compose restart
+ Container ct-2026-practice-3-redis-1 Restarting
+ Container ct-2026-practice-3-web-1 Restarting
+ Container ct-2026-practice-3-redis-1 Started
+ Container ct-2026-practice-3-web-1 Started
+Container restart and persistence: PASS
+$ docker exec ct-2026-practice-3-redis-1 redis-cli -n 15 DBSIZE
+0
+$ docker run -d --name ct-2026-practice-3-capacity-check --network ct-2026-practice-3_default -e REDIS_URL=redis://redis:6379/15 ct-2026-practice-3-notes:2026-10-18-arm64
+7f5a9a4e7391e3feb67608d9976923c1785ea75bf23b35eca80d6f16a587a826
+$ docker cp test_app.py ct-2026-practice-3-capacity-check:/tmp/test_app.py
+
+$ docker exec ct-2026-practice-3-capacity-check python /tmp/test_app.py http://127.0.0.1:8000 --capacity
+HTTP-проверки пройдены: http://127.0.0.1:8000 capacity=True
+$ docker rm -f ct-2026-practice-3-capacity-check
+ct-2026-practice-3-capacity-check
+$ docker exec ct-2026-practice-3-redis-1 redis-cli -n 15 DEL practice3:notes
+1
+Atomic capacity 100, concurrent 409 responses: PASS
+$ docker compose ps
+NAME                         IMAGE                                       COMMAND                  SERVICE   CREATED         STATUS                   PORTS
+ct-2026-practice-3-redis-1   redis:7.4-alpine                            "docker-entrypoint.s…"   redis     6 seconds ago   Up 3 seconds (healthy)   6379/tcp
+ct-2026-practice-3-web-1     ct-2026-practice-3-notes:2026-10-18-arm64   "python -m uvicorn m…"   web       6 seconds ago   Up 3 seconds             127.0.0.1:8003->8000/tcp
+$ docker inspect ct-2026-practice-3-web-1 ct-2026-practice-3-redis-1 --format '{{.Name}} restart={{.HostConfig.RestartPolicy.Name}} ports={{json .HostConfig.PortBindings}}'
+/ct-2026-practice-3-web-1 restart=unless-stopped ports={"8000/tcp":[{"HostIp":"127.0.0.1","HostPort":"8003"}]}
+/ct-2026-practice-3-redis-1 restart=unless-stopped ports={}
+$ docker exec ct-2026-practice-3-web-1 python -c 'import socket; print(socket.gethostbyname("redis"))'
+172.18.0.2
+=== http://176.222.53.58:8083 ===
+Existing HTTP test: PASS
+$ ssh practice3@176.222.53.58 'sh -c '"'"'cd ~/ct-2026-practice-3 && docker compose -f compose.cloud.yaml down'"'"''
+ Container ct-2026-practice-3-web-1 Stopping
+ Container ct-2026-practice-3-web-1 Stopped
+ Container ct-2026-practice-3-web-1 Removing
+ Container ct-2026-practice-3-web-1 Removed
+ Container ct-2026-practice-3-redis-1 Stopping
+ Container ct-2026-practice-3-redis-1 Stopped
+ Container ct-2026-practice-3-redis-1 Removing
+ Container ct-2026-practice-3-redis-1 Removed
+ Network ct-2026-practice-3_default Removing
+ Network ct-2026-practice-3_default Removed
+$ ssh practice3@176.222.53.58 'sh -c '"'"'cd ~/ct-2026-practice-3 && docker compose -f compose.cloud.yaml up -d --no-build --wait'"'"''
+ Network ct-2026-practice-3_default Creating
+ Network ct-2026-practice-3_default Creating
+ Network ct-2026-practice-3_default Created
+ Network ct-2026-practice-3_default Created
+ Container ct-2026-practice-3-redis-1 Creating
+ Container ct-2026-practice-3-redis-1 Created
+ Container ct-2026-practice-3-web-1 Creating
+ Container ct-2026-practice-3-web-1 Created
+ Container ct-2026-practice-3-redis-1 Starting
+ Container ct-2026-practice-3-redis-1 Started
+ Container ct-2026-practice-3-redis-1 Waiting
+ Container ct-2026-practice-3-redis-1 Healthy
+ Container ct-2026-practice-3-web-1 Starting
+ Container ct-2026-practice-3-web-1 Started
+ Container ct-2026-practice-3-web-1 Waiting
+ Container ct-2026-practice-3-redis-1 Waiting
+ Container ct-2026-practice-3-web-1 Healthy
+ Container ct-2026-practice-3-redis-1 Healthy
+Persistence after recreation: PASS
+$ ssh practice3@176.222.53.58 'sh -c '"'"'cd ~/ct-2026-practice-3 && docker compose -f compose.cloud.yaml stop redis'"'"''
+ Container ct-2026-practice-3-redis-1 Stopping
+ Container ct-2026-practice-3-redis-1 Stopped
+/health: 503, no traceback
+/api/notes: 503, no traceback
+/api/notes: 503, no traceback
+$ ssh practice3@176.222.53.58 'sh -c '"'"'cd ~/ct-2026-practice-3 && docker compose -f compose.cloud.yaml start redis'"'"''
+ Container ct-2026-practice-3-redis-1 Starting
+ Container ct-2026-practice-3-redis-1 Started
+Redis recovery: PASS
+$ ssh practice3@176.222.53.58 'sh -c '"'"'cd ~/ct-2026-practice-3 && docker compose -f compose.cloud.yaml restart'"'"''
+ Container ct-2026-practice-3-redis-1 Restarting
+ Container ct-2026-practice-3-web-1 Restarting
+ Container ct-2026-practice-3-redis-1 Started
+ Container ct-2026-practice-3-web-1 Started
+Container restart and persistence: PASS
+$ ssh practice3@176.222.53.58 'docker exec ct-2026-practice-3-redis-1 redis-cli -n 15 DBSIZE'
+0
+$ ssh practice3@176.222.53.58 'docker run -d --name ct-2026-practice-3-capacity-check --network ct-2026-practice-3_default -e REDIS_URL=redis://redis:6379/15 ct-2026-practice-3-notes:2026-10-18-amd64'
+29ba0f0cc1bbd952c7402261d41d6868ddedf73470e4855162feea636782fc66
+$ scp test_app.py practice3@176.222.53.58:ct-2026-practice-3/test_app.py
+
+$ ssh practice3@176.222.53.58 'docker cp /home/practice3/ct-2026-practice-3/test_app.py ct-2026-practice-3-capacity-check:/tmp/test_app.py'
+
+$ ssh practice3@176.222.53.58 'docker exec ct-2026-practice-3-capacity-check python /tmp/test_app.py http://127.0.0.1:8000 --capacity'
+HTTP-проверки пройдены: http://127.0.0.1:8000 capacity=True
+$ ssh practice3@176.222.53.58 'docker rm -f ct-2026-practice-3-capacity-check'
+ct-2026-practice-3-capacity-check
+$ ssh practice3@176.222.53.58 'docker exec ct-2026-practice-3-redis-1 redis-cli -n 15 DEL practice3:notes'
+1
+Atomic capacity 100, concurrent 409 responses: PASS
+$ ssh practice3@176.222.53.58 'sh -c '"'"'cd ~/ct-2026-practice-3 && docker compose -f compose.cloud.yaml ps'"'"''
+NAME                         IMAGE                                       COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+ct-2026-practice-3-redis-1   redis:7.4-alpine                            "docker-entrypoint.s…"   redis     27 seconds ago   Up 15 seconds (healthy)   6379/tcp
+ct-2026-practice-3-web-1     ct-2026-practice-3-notes:2026-10-18-amd64   "python -m uvicorn m…"   web       27 seconds ago   Up 15 seconds             0.0.0.0:8083->8000/tcp
+$ ssh practice3@176.222.53.58 'docker inspect ct-2026-practice-3-web-1 ct-2026-practice-3-redis-1 --format '"'"'{{.Name}} restart={{.HostConfig.RestartPolicy.Name}} ports={{json .HostConfig.PortBindings}}'"'"''
+/ct-2026-practice-3-web-1 restart=unless-stopped ports={"8000/tcp":[{"HostIp":"0.0.0.0","HostPort":"8083"}]}
+/ct-2026-practice-3-redis-1 restart=unless-stopped ports={}
+$ ssh practice3@176.222.53.58 'docker exec ct-2026-practice-3-web-1 python -c '"'"'import socket; print(socket.gethostbyname("redis"))'"'"''
+172.18.0.2
+http://176.222.53.58: HTTP 200
+http://176.222.53.58:8080: HTTP 200
+All deployment checks: PASS. Docker daemon was not restarted; firewall unchanged.
+
+$ docker images susu-cloud-practice3 --format {{.Repository}}:{{.Tag}}
+susu-cloud-practice3:2026-10-17
+
+$ docker image rm susu-cloud-practice3:2026-10-17
+Untagged: susu-cloud-practice3:2026-10-17
+Deleted: sha256:4cdb46058c6a0bd8cc91791a7e93b3c4da509c669df0880632fda39c5b5c1d34
+
+$ ssh practice3@176.222.53.58 docker images susu-cloud-practice3 --format "{{.Repository}}:{{.Tag}}"

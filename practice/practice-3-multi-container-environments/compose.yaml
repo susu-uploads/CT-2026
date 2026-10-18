@@ -1,4 +1,4 @@
-name: ct-practice3
+name: ct-2026-practice-3
 services:
   redis:
     image: redis:7.4-alpine
@@ -12,12 +12,12 @@ services:
       retries: 30
     restart: unless-stopped
   web:
-    image: susu-cloud-practice3:2026-10-17
+    image: ct-2026-practice-3-notes:2026-10-18-arm64
     build: .
     environment:
       REDIS_URL: redis://redis:6379/0
     ports:
-      - "${WEB_BIND:-127.0.0.1}:${WEB_PORT:-8003}:8000"
+      - "127.0.0.1:8003:8000"
     depends_on:
       redis:
         condition: service_healthy
