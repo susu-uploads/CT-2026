@@ -4,7 +4,7 @@
 
 **Автор:** Бабушкин Михаил Вадимович
 
-**Дата последней локальной проверки:** 17 октября 2026 года
+**Дата последней локальной и облачной проверки:** 18 октября 2026 года
 
 ## 1. Цель и результат
 
@@ -12,7 +12,7 @@
 
 Реализован калькулятор на Python 3.12 и FastAPI. Пользователь вводит два числа, выбирает действие и получает результат без перезагрузки страницы. Сервер выполняет сложение, вычитание, умножение и деление. Страница и API обслуживаются одним процессом Uvicorn в одном контейнере.
 
-Приложение повторно собрано и проверено локально 17 октября 2026 года. Облачный этап ожидает доступ к VPS практики 1; инструкция приведена в разделах 5–6. Образ будет передан по SSH без registry. Сдача преподавателю не подтверждена.
+Приложение проверено локально на Mac ARM64 и развернуто на VPS x86_64 18 октября 2026 года. Публичный адрес: <http://176.222.53.58:8080/>. Образ передан по SSH без registry. Используется имя ct-2026-practice-2-calculator. Сдача преподавателю не подтверждена.
 
 ## 2. Файлы и HTTP API
 
@@ -71,155 +71,151 @@ python3.12 test_app.py http://127.0.0.1:8000
 
 Перед следующим разделом остановить обычный сервер через **Ctrl+C**, чтобы освободить порт 8000.
 
-## 4. Локальная сборка и запуск Docker
+## 4. Локальная сборка и проверка ARM64
 
-Выполнять из каталога практики. Если контейнер `susu-cloud-practice2` уже существует, для текущей демонстрации использовать `docker start susu-cloud-practice2`, а не повторный `docker run`. Docker Desktop уже установлен на Mac; команда `open` запускает его. После запуска дождаться готовности движка: `docker info` должен завершиться успешно.
+Выполнено на Mac из каталога практики. Dockerfile, код приложения, API и зависимости сохранены без изменений.
 
 ```bash
-open -a Docker
-docker info
-docker build --platform linux/arm64 -t susu-cloud-practice2:2026-10-17 .
-docker run -d --name susu-cloud-practice2 \
+docker buildx build --platform linux/arm64 --load \
+  -t ct-2026-practice-2-calculator:2026-10-18-arm64 .
+docker run -d --name ct-2026-practice-2-calculator \
   -p 127.0.0.1:8000:8000 \
-  susu-cloud-practice2:2026-10-17
-
-curl --retry 10 --retry-all-errors --retry-delay 1 --retry-max-time 30 \
-  --max-time 5 --fail http://127.0.0.1:8000/health
-python3.12 test_app.py http://127.0.0.1:8000
-docker logs susu-cloud-practice2
-docker exec susu-cloud-practice2 id
-docker exec susu-cloud-practice2 python --version
+  ct-2026-practice-2-calculator:2026-10-18-arm64
+curl --retry 10 --retry-all-errors --retry-delay 1 --max-time 5 \
+  --fail -sS http://127.0.0.1:8000/health
+python3 test_app.py http://127.0.0.1:8000
 ```
 
-Открыть `http://127.0.0.1:8000/`. Привязка `127.0.0.1:8000:8000` делает локальный контейнер доступным с этого компьютера. В контейнере Uvicorn слушает `0.0.0.0:8000`, что позволяет Docker направлять к нему опубликованные запросы.
+Контейнер остается запущенным на loopback Mac. При повторной работе не выполнять docker run поверх существующего имени: использовать docker start или плановое пересоздание после сборки.
 
-Образ основан на `python:3.12-slim`. Сначала устанавливаются зависимости, затем копируются `main.py` и `index.html`. Это позволяет повторно использовать слой зависимостей при изменении приложения. Процесс работает от пользователя `app` с UID 10001. Команда запуска задана в exec-форме, без `--reload`; отдельный Python на удаленном сервере не требуется.
+## 5. Сборка AMD64 и передача на VPS
 
-Управление локальным контейнером:
+Пользователя practice2 создал студент и добавил в группы sudo и docker. Новый SSH-вход подтвердил группу docker и доступ к Engine без sudo. Engine 29.9.1 и Compose уже были установлены; агент их не переустанавливал.
+
+Проверки на VPS после подключения `ssh -o BatchMode=yes -o ConnectTimeout=15 practice2@176.222.53.58`:
 
 ```bash
-docker stop susu-cloud-practice2
-docker start susu-cloud-practice2
+id
+docker info --format '{{.ServerVersion}} {{.Architecture}}'
+docker ps -a --format '{{.Names}} {{.Image}} {{.Status}} {{.Ports}}'
+docker image ls --format '{{.Repository}}:{{.Tag}}'
+ss -ltn
+systemctl is-active apache2 mysql
 ```
 
-Для пересоздания контейнера после изменения приложения:
+На VPS порт 8080 был свободен, образы и контейнеры отсутствовали. На Mac выполнены:
 
 ```bash
-docker build --platform linux/arm64 -t susu-cloud-practice2:2026-10-17 .
-docker stop susu-cloud-practice2
-docker rm susu-cloud-practice2
-docker run -d --name susu-cloud-practice2 \
-  -p 127.0.0.1:8000:8000 \
-  susu-cloud-practice2:2026-10-17
-```
-
-## 5. Подготовка образа и передача на VPS по SSH
-
-Этот раздел пока не выполнен. Нужна VPS практики 1 с Ubuntu 24.04 и архитектурой x86_64. Перед сборкой проверить на сервере `uname -m`. Mac использует ARM64; серверу x86_64 нужен образ AMD64.
-
-На Mac из каталога практики выполнить:
-
-```bash
-mkdir -p .cache
 docker buildx build --platform linux/amd64 --load \
-  -t susu-cloud-practice2:2026-10-17-amd64 .
-docker save -o .cache/practice2-amd64.tar susu-cloud-practice2:2026-10-17-amd64
-shasum -a 256 .cache/practice2-amd64.tar
+  -t ct-2026-practice-2-calculator:2026-10-18-amd64 .
+mkdir -p .cache .report
+docker save -o .cache/ct-2026-practice-2-calculator-2026-10-18-amd64.tar \
+  ct-2026-practice-2-calculator:2026-10-18-amd64
+shasum -a 256 .cache/ct-2026-practice-2-calculator-2026-10-18-amd64.tar
+ssh -o BatchMode=yes practice2@176.222.53.58 'mkdir -p ~/ct-2026-practice-2'
+scp -o BatchMode=yes .cache/ct-2026-practice-2-calculator-2026-10-18-amd64.tar \
+  practice2@176.222.53.58:ct-2026-practice-2/
+ssh -o BatchMode=yes practice2@176.222.53.58 \
+  'sha256sum ~/ct-2026-practice-2/ct-2026-practice-2-calculator-2026-10-18-amd64.tar'
 ```
 
-После получения доступа настроить локальный SSH-алиас `ct-vps` с IP, пользователем, портом и путем к ключу. Секреты и приватные ключи в репозиторий не добавлять. Проверить ключ хоста сервера. Создать каталог для передачи и скопировать образ:
+Обе суммы совпали: `3b7acb2174fb1aebaa24c7be2ddc3631312c02cd1e4a9be6d7fc3da0f7c607ff`.
+
+Архив на Mac находится в игнорируемом .cache/, на сервере — в /home/practice2/ct-2026-practice-2/. Registry не нужен. Docker — общая системная служба; хранение архива в домашней папке не изолирует daemon. Группа docker дает фактически административный доступ к VPS.
+
+## 6. Развертывание и проверки на VPS
+
+### Загрузка и запуск
+
+В SSH-сессии practice2 выполнены:
 
 ```bash
-ssh ct-vps 'mkdir -p ~/practice2'
-scp .cache/practice2-amd64.tar ct-vps:practice2/
-ssh ct-vps 'sha256sum ~/practice2/practice2-amd64.tar'
-```
-
-Сравнить SHA-256 локального и переданного файлов. При несовпадении повторить передачу до загрузки образа. Registry и публикация образа не требуются. Архив остается в игнорируемом `.cache/`.
-
-## 6. Развертывание на Ubuntu 24.04
-
-Команды этого раздела выполнять **на удаленной машине по SSH**. Нужны публичный IP и учетная запись с `sudo`. Здесь подразумевается новая Ubuntu 24.04; если Docker Engine уже установлен и работает, перейти к разделу 6.2.
-
-### 6.1. Установка Docker Engine
-
-Подключить официальный репозиторий Docker:
-
-```bash
-sudo apt-get update
-sudo apt-get install -y ca-certificates curl
-sudo install -m 0755 -d /etc/apt/keyrings
-sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
-  -o /etc/apt/keyrings/docker.asc
-sudo chmod a+r /etc/apt/keyrings/docker.asc
-
-sudo tee /etc/apt/sources.list.d/docker.sources > /dev/null <<EOF
-Types: deb
-URIs: https://download.docker.com/linux/ubuntu
-Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
-Components: stable
-Architectures: $(dpkg --print-architecture)
-Signed-By: /etc/apt/keyrings/docker.asc
-EOF
-
-sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-sudo systemctl enable --now docker
-sudo docker version
-sudo docker run --rm hello-world
-```
-
-### 6.2. Загрузка и запуск приложения
-
-Облачные команды ниже пока не выполнялись. На сервере сохранить Apache и WordPress практики 1 на порту 80. Убедиться, что порт 8080 свободен и контейнер с выбранным именем еще не существует.
-
-```bash
-sudo ss -ltnp 'sport = :8080'
-sudo docker ps -a --filter name=susu-cloud-practice2
-sudo docker load -i ~/practice2/practice2-amd64.tar
-sudo docker image inspect susu-cloud-practice2:2026-10-17-amd64 \
+set -eu
+docker load -i ~/ct-2026-practice-2/ct-2026-practice-2-calculator-2026-10-18-amd64.tar
+docker image inspect ct-2026-practice-2-calculator:2026-10-18-amd64 \
   --format '{{.Os}}/{{.Architecture}}'
-sudo docker run -d --name susu-cloud-practice2 \
-  --restart unless-stopped \
-  -p 8080:8000 \
-  susu-cloud-practice2:2026-10-17-amd64
-sudo docker ps --filter name=susu-cloud-practice2
-curl --retry 10 --retry-all-errors --retry-delay 1 --retry-max-time 30 \
-  --max-time 5 --fail http://127.0.0.1:8080/health
-sudo docker logs --tail 50 susu-cloud-practice2
+docker run -d --name ct-2026-practice-2-calculator \
+  --restart unless-stopped -p 8080:8000 \
+  ct-2026-practice-2-calculator:2026-10-18-amd64
+curl --retry 10 --retry-all-errors --retry-delay 1 --max-time 5 \
+  --fail -sS http://127.0.0.1:8080/health
+docker exec ct-2026-practice-2-calculator id
+docker exec ct-2026-practice-2-calculator python --version
+docker exec ct-2026-practice-2-calculator python -m pip check
+docker inspect ct-2026-practice-2-calculator \
+  --format '{{.HostConfig.RestartPolicy.Name}}'
 ```
 
-Проверка образа должна вернуть `linux/amd64`. При занятом порту или существующем контейнере сначала выяснить, кому они принадлежат; чужие ресурсы не останавливать и не удалять.
+Образ — linux/amd64, Python 3.12.15, процесс — UID 10001(app), без root. Docker направляет публичный порт 8080 на 8000 внутри контейнера. Порт 80 WordPress сохраняется. Firewall и конфигурации Apache/MySQL не менялись, UFW не включался.
 
-### 6.3. Публичный доступ и демонстрация
-
-В сетевых правилах провайдера разрешить входящий TCP/8080 для публичной демонстрации. Сохранить правила SSH и HTTP/80 практики 1. Если внешнего firewall у провайдера нет, настроить фильтрацию с учетом правил Docker: одного UFW недостаточно для ограничения опубликованных Docker-портов.
-
-На Mac из каталога практики выполнить:
+С Mac выполнен внешний тест:
 
 ```bash
-export SERVER_IP='<публичный-IP-сервера>'
-curl --fail "http://${SERVER_IP}:8080/health"
-python3.12 test_app.py "http://${SERVER_IP}:8080"
+python3 test_app.py http://176.222.53.58:8080
 ```
 
-Открыть `http://<публичный-IP-сервера>:8080/` и `/docs`. Проверить вычисление, деление на ноль и повторный расчет. Сохранить собственные скриншоты сайта и состояния контейнера. Отдельно убедиться, что WordPress практики 1 продолжает работать на порту 80.
+Форма в браузере проверена: 6 / 2 = 3, деление на ноль показывает ошибку, после исправления снова получается 3. Swagger UI открывается по <http://176.222.53.58:8080/docs>.
 
-### 6.4. Проверка восстановления и управление
-
-На выделенной учебной VPS проверить восстановление контейнера после перезапуска Docker. Перед этим проверить отсутствие чужих контейнеров: перезапуск Docker кратковременно прерывает их работу.
+### Остановка и повторный запуск
 
 ```bash
-sudo systemctl restart docker
-sudo docker ps --filter name=susu-cloud-practice2
-curl --retry 10 --retry-all-errors --retry-delay 1 --retry-max-time 30 \
-  --max-time 5 --fail http://127.0.0.1:8080/health
-sudo docker logs --tail 50 susu-cloud-practice2
+ssh -o BatchMode=yes practice2@176.222.53.58 \
+  'docker stop ct-2026-practice-2-calculator'
 ```
 
-Повторить внешний HTTP-тест с Mac. Для обычного управления использовать `sudo docker stop susu-cloud-practice2` и `sudo docker start susu-cloud-practice2`. Остановленный вручную контейнер политика `unless-stopped` автоматически не поднимает.
+С Mac подтверждена недоступность остановленного контейнера:
 
-Обновление выполнять передачей нового тега образа: сначала успешно загрузить его через `docker load`, затем пересоздать только контейнер этой практики с теми же портом и политикой перезапуска. Apache и WordPress не изменять. Удаление облачных ресурсов после сдачи согласовать отдельно.
+```bash
+python3 - <<'PY'
+from urllib.request import urlopen
+from urllib.error import URLError
+try:
+    urlopen('http://176.222.53.58:8080/health', timeout=5)
+    raise AssertionError('Stopped container is still reachable')
+except URLError:
+    print('Stopped container: unavailable as expected')
+PY
+
+ssh -o BatchMode=yes practice2@176.222.53.58 \
+  'docker start ct-2026-practice-2-calculator'
+curl --retry 10 --retry-all-errors --retry-delay 1 --max-time 5 \
+  --fail -sS http://176.222.53.58:8080/health
+python3 test_app.py http://176.222.53.58:8080
+```
+
+Полный HTTP-тест после запуска прошел. Краткие ошибки соединения во время старта были обработаны curl с retry.
+
+### Восстановление после перезапуска Docker
+
+На VPS перед перезапуском проверено отсутствие других работающих контейнеров. Для systemctl оказался доступен sudo без пароля; Docker-команды выполнялись без sudo. Правила sudo агент не создавал и не изменял.
+
+```bash
+set -eu
+others=$(docker ps --format '{{.Names}}' | sed '/^ct-2026-practice-2-calculator$/d')
+if [ -n "$others" ]; then
+    echo 'Docker restart skipped: other containers are running'
+    exit 1
+fi
+sudo -n systemctl restart docker
+curl --retry 15 --retry-all-errors --retry-delay 1 --max-time 5 \
+  --fail -sS http://127.0.0.1:8080/health
+docker ps --filter name=ct-2026-practice-2-calculator \
+  --format '{{.Names}} {{.Status}}'
+systemctl is-active apache2 mysql
+```
+
+Затем с Mac снова прошел `python3 test_app.py http://176.222.53.58:8080`. Контейнер восстановился автоматически. Ручной docker stop оставляет контейнер остановленным до явного запуска — это поведение unless-stopped.
+
+Работа WordPress проверена отдельно с Mac:
+
+```bash
+python3 - <<'PY'
+from urllib.request import urlopen
+with urlopen('http://176.222.53.58/', timeout=15) as response:
+    assert response.status == 200 and 'Практика 1' in response.read().decode()
+print('WordPress on port 80: OK')
+PY
+```
 
 ## 7. Фактические локальные проверки
 
@@ -290,7 +286,7 @@ Docker Engine 29.3.1, macOS ARM64. Заново собран образ `susu-cl
 
 ## 8. Вывод
 
-Веб-приложение упаковано в один Docker-контейнер и доступно локально через опубликованный порт. Один и тот же набор HTTP-проверок прошел при обычном запуске Python и в контейнерах ARM64 и AMD64. Для облачной части подготовлена передача образа AMD64 по SSH и запуск на Ubuntu 24.04, порт 8080; ее выполнение и публичная доступность пока не подтверждены. План оставшихся действий находится в TODO.md.
+Веб-приложение упаковано в один Docker-контейнер и доступно локально через опубликованный порт. Один и тот же набор HTTP-проверок прошел при обычном запуске Python и в контейнерах ARM64 и AMD64. Облачная часть выполнена 18 октября 2026 года. Проверены публичная доступность, HTTP API, форма и восстановление контейнера после перезапуска Docker. Сдача преподавателю пока не подтверждена.
 
 ## Источники
 
@@ -298,3 +294,71 @@ Docker Engine 29.3.1, macOS ARM64. Заново собран образ `susu-cl
 - [FastAPI: приложение в Docker](https://fastapi.tiangolo.com/deployment/docker/).
 - [Docker: установка на Ubuntu](https://docs.docker.com/engine/install/ubuntu/).
 - [Docker: сборка для нескольких платформ](https://docs.docker.com/build/building/multi-platform/).
+
+## 9. Результат 18 октября 2026 года и удаление старых образов
+
+| Проверка | Фактический результат |
+|---|---|
+| SSH practice2 и группа docker | Подтверждены; Docker доступен без sudo |
+| ARM64 на Mac | Сборка и HTTP-тест прошли |
+| AMD64 на VPS | Сборка, передача, проверка SHA-256 и запуск прошли |
+| Внешний HTTP-тест | Прошел после запуска, остановки/запуска и перезапуска Docker |
+| Форма и Swagger UI | Проверены в браузере |
+| UID контейнера | 10001(app), без root |
+| pip check | Конфликтов нет |
+| Restart policy | unless-stopped; восстановление после перезапуска daemon проверено |
+| WordPress и MySQL | Работают; публичная страница WordPress возвращает 200 |
+| Старые контейнеры и теги практики 2 | Удалены на Mac; на VPS их не было |
+| Практики 3–4 и сторонние образы | Не изменялись |
+| Сдача | Не подтверждена |
+
+После проверки новых образов на Mac осмотрены старые контейнеры: оба остановлены, подключенных томов нет. Затем выполнены:
+
+```bash
+docker inspect susu-cloud-practice2 susu-cloud-practice2-20261002 \
+  --format '{{.Name}} mounts={{json .Mounts}} image={{.Config.Image}}'
+docker rm susu-cloud-practice2 susu-cloud-practice2-20261002
+docker image rm susu-cloud-practice2:1.0 \
+  susu-cloud-practice2:1.0-amd64 susu-cloud-practice2:2026-10-17
+docker image ls --format '{{.Repository}}:{{.Tag}}'
+```
+
+Удаление выполнялось без force и без общего prune. Отдельная проверка подтвердила отсутствие тегов susu-cloud-practice2. На VPS проверены docker image ls и docker ps: остались новый образ и новый контейнер. Исторические журналы и снимки раздела 7 сохраняют прежние имена; они описывают прошлое состояние, а не текущие контейнеры.
+
+Итоговый журнал: [вывод облачных проверок](БабушкинМВ-cloud-checks.txt). В нем приведены команды docker version, ps, image inspect, inspect, exec, sha256sum и systemctl is-active вместе с фактическим выводом. После очистки старых образов HTTP-тесты локального и облачного контейнеров также прошли.
+
+Для создания новых скриншотов использован Playwright CLI на Mac:
+
+```bash
+PWCLI=/Users/mikhail/.codex/skills/playwright/scripts/playwright_cli.sh
+PRACTICE=/Users/mikhail/Developer/2026-autumn/CT-2026/practice/practice-2-container-creation-and-management-in-public-clouds-single-container-application
+"$PWCLI" -s=ct-practice2-vps open http://176.222.53.58:8080 --headed
+```
+
+После snapshot выполнены `click e13`, снимок результата, `fill e10 0`, `click e13`, снимок ошибки, затем `fill e10 2`, `click e13` и проверка восстановления. Референсы относятся к снимку этой страницы; при повторном запуске нужно получить новые через snapshot. Для проверки документации выполнены goto http://176.222.53.58:8080/docs и snapshot. Команды сохранения:
+
+```bash
+"$PWCLI" -s=ct-practice2-vps screenshot \
+  --filename "$PRACTICE/БабушкинМВ-cloud-calculator.png"
+"$PWCLI" -s=ct-practice2-vps screenshot \
+  --filename "$PRACTICE/БабушкинМВ-cloud-error.png"
+```
+
+Эти две команды выполнялись в соответствующих состояниях формы. Во время системного перезапуска Docker один запрос формы попал на кратковременную недоступность сервиса; после восстановления повторное вычисление прошло. Изменений кода для этого не требовалось.
+
+Для снимка контейнера фактический текст журнала преобразован в HTML через html.escape и сохранен в игнорируемой .report/cloud-checks.html. Запуск локального просмотра и снимок:
+
+```bash
+python3 -m http.server 8768 --bind 127.0.0.1 --directory .report
+"$PWCLI" -s=ct-practice2-evidence open http://127.0.0.1:8768/cloud-checks.html
+"$PWCLI" -s=ct-practice2-evidence screenshot --full-page \
+  --filename "$PRACTICE/БабушкинМВ-cloud-container.png"
+```
+
+Снимок контейнера — представление фактического вывода команд, а не интерфейс Docker Desktop. Архивы, промежуточный HTML и исходники приложения в Git не добавлялись повторно; код приложения не изменялся. Изменения практики 2 подготовлены отдельным коммитом для публикации по запросу студента.
+
+![Облачный калькулятор](БабушкинМВ-cloud-calculator.png)
+
+![Ошибка деления на ноль](БабушкинМВ-cloud-error.png)
+
+![Облачный контейнер и проверки](БабушкинМВ-cloud-container.png)

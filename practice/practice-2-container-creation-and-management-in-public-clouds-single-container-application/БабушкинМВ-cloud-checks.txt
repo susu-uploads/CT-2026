@@ -1,0 +1,36 @@
+Практика 2. Облачная проверка 18 октября 2026 года.
+
+Команды на VPS:
+set -eu
+id
+docker version --format 'Client={{.Client.Version}} Server={{.Server.Version}}'
+docker ps --filter name=ct-2026-practice-2-calculator --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
+docker image inspect ct-2026-practice-2-calculator:2026-10-18-amd64 --format '{{.Os}}/{{.Architecture}} {{.Id}}'
+docker inspect ct-2026-practice-2-calculator --format 'restart={{.HostConfig.RestartPolicy.Name}} status={{.State.Status}}'
+docker exec ct-2026-practice-2-calculator id
+docker exec ct-2026-practice-2-calculator python --version
+docker exec ct-2026-practice-2-calculator python -m pip check
+sha256sum ~/ct-2026-practice-2/ct-2026-practice-2-calculator-2026-10-18-amd64.tar
+systemctl is-active apache2 mysql
+
+Вывод:
+uid=1001(practice2) gid=1001(practice2) groups=1001(practice2),27(sudo),100(users),990(docker)
+Client=29.9.1 Server=29.9.1
+NAMES                           IMAGE                                            STATUS              PORTS
+ct-2026-practice-2-calculator   ct-2026-practice-2-calculator:2026-10-18-amd64   Up About a minute   0.0.0.0:8080->8000/tcp, [::]:8080->8000/tcp
+linux/amd64 sha256:c2e2391dedc0d9dffb9c2a07027d8fec48d97b57911fc90213f7094d6ccf8daa
+restart=unless-stopped status=running
+uid=10001(app) gid=10001(app) groups=10001(app)
+Python 3.12.15
+No broken requirements found.
+3b7acb2174fb1aebaa24c7be2ddc3631312c02cd1e4a9be6d7fc3da0f7c607ff  /home/practice2/ct-2026-practice-2/ct-2026-practice-2-calculator-2026-10-18-amd64.tar
+active
+active
+
+$ python3 test_app.py http://127.0.0.1:8000
+HTTP-проверки пройдены: http://127.0.0.1:8000
+
+$ python3 test_app.py http://176.222.53.58:8080
+HTTP-проверки пройдены: http://176.222.53.58:8080
+
+Остановка/запуск и восстановление после systemctl restart docker проверены отдельно; внешние HTTP-тесты после них прошли.
